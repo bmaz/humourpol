@@ -1,0 +1,7 @@
+[project]
+name = "humourpol"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = ["casanova>=2.1.0", "streamlit>=1.62.0"]
