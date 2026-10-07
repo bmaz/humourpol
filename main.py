@@ -16,7 +16,14 @@ left_col, center_col, right_col = st.columns([1, 3, 1])
 _, bcol1, bcol2, _ = st.sidebar.columns([1, 1, 1, 1])
 
 
-# Process the CSV
+def initialize_toggles():
+    if f"visual_humor_{st.session_state.current_id}" not in st.session_state:
+        st.session_state[f"visual_humor_{st.session_state.current_id}"] = False
+
+    if f"textual_humor_{st.session_state.current_id}" not in st.session_state:
+        st.session_state[f"textual_humor_{st.session_state.current_id}"] = False
+
+
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 
@@ -28,25 +35,94 @@ if st.session_state.uploaded_file is None:
         st.rerun()
 
 else:
-    db, first_id = parse_csv(st.session_state.uploaded_file)
-    if "current_id" not in st.session_state:
-        st.session_state.current_id = first_id
-    if bcol1.button("", icon=":material/arrow_back_ios:", shortcut="Left"):
-        previous_id = db[st.session_state.current_id]["previous_id"]
+    if "db" not in st.session_state:
+        st.session_state.db, st.session_state.current_id = parse_csv(
+            st.session_state.uploaded_file
+        )
+
+    initialize_toggles()
+
+    if bcol1.button("", icon=":material/arrow_back_ios:", shortcut="Up"):
+        previous_id = st.session_state.db[st.session_state.current_id]["previous_id"]
         if previous_id is not None:
             st.session_state.current_id = previous_id
-    if bcol2.button("", icon=":material/arrow_forward_ios:", shortcut="Right"):
-        next_id = db[st.session_state.current_id]["next_id"]
+        initialize_toggles()
+
+    if bcol2.button("", icon=":material/arrow_forward_ios:", shortcut="Down"):
+        next_id = st.session_state.db[st.session_state.current_id]["next_id"]
         if next_id is not None:
             st.session_state.current_id = next_id
+        initialize_toggles()
+
+    record = st.session_state.db[st.session_state.current_id]
+    image_path = record["image"]
+
+    def content_type_selected():
+        record["content_type"] = st.session_state[
+            f"content_type_{st.session_state.current_id}"
+        ]
+        # st.empty()
+
+    def visual_humor_selected():
+        record["visual_humor"] = st.session_state[
+            f"visual_humor_{st.session_state.current_id}"
+        ]
+        # st.write("")
+
+    def textual_humor_selected():
+        record["textual_humor"] = st.session_state[
+            f"textual_humor_{st.session_state.current_id}"
+        ]
+        # st.write("")
 
     with center_col:
-        record = db[st.session_state.current_id]
-        image_path = record["image"]
         if image_path:
             image = process_image(image_path)
             if image:
                 st.image(image)
-        st.sidebar.write(f"**{record['account']}**")
-        st.sidebar.caption(record["date"])
-        st.sidebar.write(record["text"])
+
+    st.sidebar.write(f"**{record['account']}**")
+    st.sidebar.caption(record["date"])
+    st.sidebar.write(record["text"])
+
+    with right_col:
+        margin, col_with_margin = st.columns([1, 9])
+        with col_with_margin:
+            st.write("L'image est-elle humoristique ?")
+            visual_humor = st.toggle(
+                "L'image est humoristique"
+                if st.session_state[f"visual_humor_{st.session_state.current_id}"]
+                else "L'image n'est pas humoristique",
+                key=f"visual_humor_{st.session_state.current_id}",
+                on_change=visual_humor_selected,
+            )
+
+            st.write("Le texte est-il humoristique ?")
+            textual_humor = st.toggle(
+                "Le texte est humoristique"
+                if st.session_state[f"textual_humor_{st.session_state.current_id}"]
+                else "Le texte n'est pas humoristique",
+                key=f"textual_humor_{st.session_state.current_id}",
+                on_change=textual_humor_selected,
+            )
+
+            content_type = st.pills(
+                "Type de contenu",
+                [
+                    "Photo",
+                    "Caricature",
+                    "Mème",
+                    "Infographie",
+                    "Illustration",
+                    "Montage photo",
+                    "Capture d’écran d’un site d'information",
+                    "Capture d’écran d’un sondage",
+                    "Capture d’écran d'un tweet",
+                    "Autre",
+                    "Ne s'applique pas",
+                ],
+                selection_mode="single",
+                default="Photo",
+                key=f"content_type_{st.session_state.current_id}",
+                on_change=content_type_selected,
+            )
