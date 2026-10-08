@@ -2,6 +2,7 @@ import streamlit as st
 
 from data import parse_csv
 from image import process_image
+from sqlite import extract_values, get_db, save_value
 
 st.set_page_config(layout="wide", page_title="Interface d'annotation")
 # st.logo("Facebook.png", size="large")
@@ -14,6 +15,8 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 # data_file = st.file_uploader("Sélectionner un fichier CSV", type=["csv"])
 left_col, center_col, right_col = st.columns([1, 3, 1])
 _, bcol1, bcol2, _ = st.sidebar.columns([1, 1, 1, 1])
+
+conn = get_db()
 
 
 def initialize_toggles():
@@ -64,6 +67,12 @@ else:
         record["content_type"] = st.session_state[
             f"content_type_{st.session_state.current_id}"
         ]
+        save_value(
+            conn,
+            st.session_state.current_id,
+            record["team_member"],
+            record["content_type"],
+        )
         # st.empty()
 
     def visual_humor_selected():
@@ -125,7 +134,9 @@ else:
                     "Ne s'applique pas",
                 ],
                 selection_mode="single",
-                default="Photo",
                 key=f"content_type_{st.session_state.current_id}",
                 on_change=content_type_selected,
             )
+
+            if st.button("Print DB"):
+                extract_values(conn, record["team_member"])

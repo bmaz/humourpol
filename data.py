@@ -21,6 +21,7 @@ def parse_csv(data_file):
     text_pos = reader.headers.text
     mimetype_pos = reader.headers.mimetype
     b64_image_pos = reader.headers.b64_image
+    team_member_pos = reader.headers.team_member
 
     previous_id = None
     first_id = None
@@ -35,6 +36,7 @@ def parse_csv(data_file):
             "text": row[text_pos],
             "previous_id": previous_id,
             "next_id": None,
+            "team_member": row[team_member_pos],
             "b64_image": row[b64_image_pos] if "image" in row[mimetype_pos] else None,
         }
 

@@ -6,7 +6,7 @@ import casanova
 from PIL import Image, UnidentifiedImageError
 
 # Max dimensions for processing
-MAX_IMAGE_SIZE = 1000  # pixels
+MAX_IMAGE_SIZE = 900  # pixels
 
 
 # Resize image while maintaining aspect ratio
