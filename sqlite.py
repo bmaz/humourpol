@@ -1,4 +1,6 @@
+import csv
 import sqlite3
+from io import StringIO
 
 import streamlit as st
 
@@ -38,9 +40,10 @@ def save_value(conn, id, user, content_type):
     conn.commit()
 
 
-def extract_values(conn, user):
+@st.cache_data
+def extract_values(_conn, user):
 
-    cursor = conn.execute(
+    cursor = _conn.execute(
         """
     SELECT id, content_type, user
     FROM annotations
@@ -49,5 +52,11 @@ def extract_values(conn, user):
         (user,),
     )
 
+    buffer = StringIO()
+
+    writer = csv.writer(buffer)
+    writer.writerow(["id", "content_type", "team_member"])
     for post_id, content_type, userid in cursor.fetchall():
-        print(post_id, content_type, userid)
+        writer.writerow([post_id, content_type, userid])
+
+    return buffer.getvalue()
