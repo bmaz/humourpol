@@ -1,8 +1,12 @@
+import csv
+import sys
 from datetime import datetime
 from io import StringIO
 
 import casanova
 import streamlit as st
+
+csv.field_size_limit(sys.maxsize)
 
 
 @st.cache_data
@@ -16,7 +20,7 @@ def parse_csv(data_file):
     id_pos = reader.headers.id
     text_pos = reader.headers.text
     mimetype_pos = reader.headers.mimetype
-    image_pos = reader.headers.full_path
+    b64_image_pos = reader.headers.b64_image
 
     previous_id = None
     first_id = None
@@ -31,7 +35,7 @@ def parse_csv(data_file):
             "text": row[text_pos],
             "previous_id": previous_id,
             "next_id": None,
-            "image": row[image_pos] if "image" in row[mimetype_pos] else None,
+            "b64_image": row[b64_image_pos] if "image" in row[mimetype_pos] else None,
         }
 
         if previous_id:

@@ -55,7 +55,7 @@ else:
         initialize_toggles()
 
     record = st.session_state.db[st.session_state.current_id]
-    image_path = record["image"]
+    b64_image = record["b64_image"]
 
     def content_type_selected():
         record["content_type"] = st.session_state[
@@ -76,8 +76,8 @@ else:
         # st.write("")
 
     with center_col:
-        if image_path:
-            image = process_image(image_path)
+        if b64_image:
+            image = process_image(b64_image)
             if image:
                 st.image(image)
 
