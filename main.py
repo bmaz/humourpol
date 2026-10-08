@@ -55,7 +55,10 @@ else:
         initialize_toggles()
 
     record = st.session_state.db[st.session_state.current_id]
-    b64_image = record["b64_image"]
+    try:
+        b64_image = record["b64_image"]
+    except KeyError:
+        st.write(record)
 
     def content_type_selected():
         record["content_type"] = st.session_state[
