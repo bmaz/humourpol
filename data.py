@@ -1,11 +1,8 @@
-import locale
 from datetime import datetime
 from io import StringIO
 
 import casanova
 import streamlit as st
-
-locale.setlocale(locale.LC_TIME, "fr_CA")
 
 
 @st.cache_data
