@@ -40,7 +40,6 @@ def save_value(conn, id, user, content_type):
     conn.commit()
 
 
-@st.cache_data
 def extract_values(_conn, user):
 
     cursor = _conn.execute(

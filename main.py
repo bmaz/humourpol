@@ -64,9 +64,6 @@ else:
 
     b64_image = record["b64_image"]
 
-    def prepare_csv_export():
-        return extract_values(conn, record["team_member"])
-
     def content_type_selected():
         record["content_type"] = st.session_state[
             f"content_type_{st.session_state.current_id}"
@@ -104,13 +101,6 @@ else:
     with right_col:
         margin, col_with_margin = st.columns([1, 9])
         with col_with_margin:
-            st.download_button(
-                label="Export CSV",
-                data=prepare_csv_export,
-                file_name=f"Annotation_{record['team_member']}_{datetime.now(tz=pytz.timezone('America/Toronto')).strftime('%Y-%m-%dT%H-%M-%S')}.csv",
-                mime="text/csv",
-                icon=":material/download:",
-            )
             st.write("L'image est-elle humoristique ?")
             visual_humor = st.toggle(
                 "L'image est humoristique"
@@ -148,3 +138,13 @@ else:
                 key=f"content_type_{st.session_state.current_id}",
                 on_change=content_type_selected,
             )
+
+            if st.button("Sauvegarder la progression"):
+                data = extract_values(conn, record["team_member"])
+                st.download_button(
+                    label="Export CSV",
+                    data=data,
+                    file_name=f"Annotation_{record['team_member']}_{datetime.now(tz=pytz.timezone('America/Toronto')).strftime('%Y-%m-%dT%H-%M-%S')}.csv",
+                    mime="text/csv",
+                    icon=":material/download:",
+                )
