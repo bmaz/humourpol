@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import pytz
 import streamlit as st
 
 from data import parse_csv
@@ -106,7 +107,7 @@ else:
             st.download_button(
                 label="Export CSV",
                 data=prepare_csv_export,
-                file_name=f"Annotation_{record['team_member']}_{datetime.now().strftime('%Y-%m-%dT%H-%M-%S')}.csv",
+                file_name=f"Annotation_{record['team_member']}_{datetime.now(tz=pytz.timezone('America/Toronto')).strftime('%Y-%m-%dT%H-%M-%S')}.csv",
                 mime="text/csv",
                 icon=":material/download:",
             )
