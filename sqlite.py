@@ -9,7 +9,7 @@ import streamlit as st
 def get_db():
     conn = sqlite3.connect("annotations.db", check_same_thread=False)
 
-    # conn.execute("DROP TABLE annotations")
+    conn.execute("DROP TABLE annotations")
 
     conn.execute("""
     CREATE TABLE IF NOT EXISTS annotations (
