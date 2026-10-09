@@ -9,10 +9,13 @@ import streamlit as st
 def get_db():
     conn = sqlite3.connect("annotations.db", check_same_thread=False)
 
+    # conn.execute("DROP TABLE annotations")
+
     conn.execute("""
     CREATE TABLE IF NOT EXISTS annotations (
         id INTEGER,
         user TEXT,
+        text TEXT,
         content_type TEXT,
         PRIMARY KEY (id, user)
     )
@@ -22,11 +25,11 @@ def get_db():
     return conn
 
 
-def save_value(conn, id, user, content_type):
+def save_value(conn, id, user, content_type, text):
     conn.execute(
         """
-    INSERT INTO annotations (id, user, content_type)
-    VALUES (?, ?, ?)
+    INSERT INTO annotations (id, user, content_type, text)
+    VALUES (?, ?, ?, ?)
     ON CONFLICT(id, user) DO UPDATE SET
         content_type = excluded.content_type
     """,
@@ -34,6 +37,7 @@ def save_value(conn, id, user, content_type):
             id,
             user,
             content_type,
+            text,
         ),
     )
 
@@ -44,7 +48,7 @@ def extract_values(_conn, user):
 
     cursor = _conn.execute(
         """
-    SELECT id, content_type, user
+    SELECT id, content_type, user, text
     FROM annotations
     WHERE user = ?
     """,
@@ -54,8 +58,8 @@ def extract_values(_conn, user):
     buffer = StringIO()
 
     writer = csv.writer(buffer)
-    writer.writerow(["id", "content_type", "team_member"])
-    for post_id, content_type, userid in cursor.fetchall():
-        writer.writerow([post_id, content_type, userid])
+    writer.writerow(["id", "content_type", "team_member", "text"])
+    for post_id, content_type, user_id, text in cursor.fetchall():
+        writer.writerow([post_id, content_type, user_id, text])
 
     return buffer.getvalue()

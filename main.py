@@ -73,6 +73,7 @@ else:
             st.session_state.current_id,
             record["team_member"],
             record["content_type"],
+            record["text"],
         )
         # st.empty()
 
