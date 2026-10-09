@@ -1,4 +1,5 @@
 import csv
+import locale
 import sys
 from datetime import datetime
 from io import StringIO
@@ -7,6 +8,8 @@ import casanova
 import streamlit as st
 
 csv.field_size_limit(sys.maxsize)
+
+locale.setlocale(locale.LC_TIME, "fr_FR")
 
 
 @st.cache_data
