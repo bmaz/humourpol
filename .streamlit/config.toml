@@ -1,0 +1,7 @@
+[theme]
+backgroundColor = "black"
+textColor = "white"
+
+[theme.sidebar]
+backgroundColor = "white"
+textColor = "black"
