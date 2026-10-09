@@ -140,7 +140,7 @@ else:
                 on_change=content_type_selected,
             )
 
-            if st.button("Sauvegarder la progression"):
+            if st.button("Sauvegarde", icon=":material/backup:"):
                 data = extract_values(conn, record["team_member"])
                 st.download_button(
                     label="Export CSV",
