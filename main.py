@@ -5,7 +5,7 @@ import streamlit as st
 
 from data import parse_csv
 from image import process_image
-from sqlite import extract_values, get_db, save_value
+from sqlite import extract_values, fetch_value, get_db, save_value
 
 st.set_page_config(layout="wide", page_title="Interface d'annotation")
 # st.logo("Facebook.png", size="large")
@@ -120,7 +120,11 @@ else:
                 on_change=textual_humor_selected,
             )
 
-            content_type = st.pills(
+            content_type = fetch_value(
+                conn, st.session_state.current_id, record["team_member"]
+            )
+
+            st.pills(
                 "Type de contenu",
                 [
                     "Photo",
@@ -137,6 +141,7 @@ else:
                 ],
                 selection_mode="single",
                 key=f"content_type_{st.session_state.current_id}",
+                default=content_type,
                 on_change=content_type_selected,
             )
 

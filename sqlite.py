@@ -44,6 +44,19 @@ def save_value(conn, id, user, content_type, text):
     conn.commit()
 
 
+def fetch_value(conn, id, user):
+
+    cursor = conn.execute(
+        """
+    SELECT content_type
+    FROM annotations
+    WHERE (id, user) = (?, ?)
+        """,
+        (id, user),
+    )
+    return cursor.fetchone()
+
+
 def extract_values(_conn, user):
 
     cursor = _conn.execute(
