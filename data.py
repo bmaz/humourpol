@@ -31,7 +31,7 @@ def parse_csv(data_file, conn):
     first_id = None
     last_visited = None
 
-    for row in reader:
+    for enum, row in enumerate(reader):
         int_id = int(row[id_pos])
         db[int_id] = {
             "account": row[account_pos],
@@ -43,6 +43,7 @@ def parse_csv(data_file, conn):
             "next_id": None,
             "team_member": row[team_member_pos],
             "b64_image": row[b64_image_pos] if "image" in row[mimetype_pos] else None,
+            "progress": enum + 1,
         }
 
         if previous_id:
@@ -57,4 +58,4 @@ def parse_csv(data_file, conn):
     if last_visited is None:
         return db, first_id
 
-    return db, last_visited
+    return db, last_visited, db[int_id]["progress"]

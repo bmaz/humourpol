@@ -43,11 +43,14 @@ if st.session_state.uploaded_file is None:
 
 else:
     if "db" not in st.session_state:
-        st.session_state.db, st.session_state.current_id = parse_csv(
-            st.session_state.uploaded_file, conn
+        st.session_state.db, st.session_state.current_id, st.session_state.total = (
+            parse_csv(st.session_state.uploaded_file, conn)
         )
 
     initialize_toggles()
+
+    with st.bottom:
+        progressbar = st.progress(0)
 
     if bcol1.button("", icon=":material/arrow_back_ios:", shortcut="Up"):
         previous_id = st.session_state.db[st.session_state.current_id]["previous_id"]
@@ -62,6 +65,11 @@ else:
         initialize_toggles()
 
     record = st.session_state.db[st.session_state.current_id]
+
+    progressbar.progress(
+        record["progress"] / st.session_state.total,
+        text=f"{record['progress']}/{st.session_state.total}",
+    )
 
     b64_image = record["b64_image"]
 
