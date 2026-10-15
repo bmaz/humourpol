@@ -5,9 +5,8 @@ from datetime import datetime
 from io import StringIO
 
 import casanova
-import streamlit as st
 
-from sqlite import fetch_value
+from sqlite import fetch_annotations
 
 csv.field_size_limit(sys.maxsize)
 
@@ -52,7 +51,8 @@ def parse_csv(data_file, conn):
             first_id = int_id
         previous_id = int_id
 
-        if fetch_value(conn, int_id, row[team_member_pos]):
+        annotations = fetch_annotations(conn, int_id, row[team_member_pos])
+        if annotations and annotations[0]:
             last_visited = int_id
 
     if last_visited is None:

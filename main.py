@@ -4,9 +4,9 @@ import pytz
 import streamlit as st
 
 from data import parse_csv
-from form import content_type_categories
+from form import content_type_categories, humor_categories
 from image import process_image
-from sqlite import extract_values, fetch_value, get_db, save_value
+from sqlite import extract_values, fetch_annotations, get_db, save_value
 
 st.set_page_config(layout="wide", page_title="Interface d'annotation")
 # st.logo("Facebook.png", size="large")
@@ -17,18 +17,15 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 
 # UI Layout
 # data_file = st.file_uploader("Sélectionner un fichier CSV", type=["csv"])
-left_col, center_col, right_col = st.columns([1, 3, 1])
+left_col, center_col, right_col = st.columns([2, 5, 2])
 _, bcol1, bcol2, _ = st.sidebar.columns([1, 1, 1, 1])
 
 conn = get_db()
 
 
 def initialize_toggles():
-    if f"visual_humor_{st.session_state.current_id}" not in st.session_state:
-        st.session_state[f"visual_humor_{st.session_state.current_id}"] = False
-
-    if f"textual_humor_{st.session_state.current_id}" not in st.session_state:
-        st.session_state[f"textual_humor_{st.session_state.current_id}"] = False
+    if f"humor_{st.session_state.current_id}" not in st.session_state:
+        st.session_state[f"humor_{st.session_state.current_id}"] = False
 
 
 if "uploaded_file" not in st.session_state:
@@ -81,22 +78,34 @@ else:
             conn,
             st.session_state.current_id,
             record["team_member"],
+            record["progress"],
+            "content_type",
             record["content_type"],
-            record["text"],
         )
-        # st.empty()
 
-    def visual_humor_selected():
-        record["visual_humor"] = st.session_state[
-            f"visual_humor_{st.session_state.current_id}"
-        ]
-        # st.write("")
+    def humor_selected():
+        record["humor"] = st.session_state[f"humor_{st.session_state.current_id}"]
+        save_value(
+            conn,
+            st.session_state.current_id,
+            record["team_member"],
+            record["progress"],
+            "humor",
+            record["humor"],
+        )
 
-    def textual_humor_selected():
-        record["textual_humor"] = st.session_state[
-            f"textual_humor_{st.session_state.current_id}"
+    def radio_selected():
+        record["generated_by_ai"] = st.session_state[
+            f"IA_{st.session_state.current_id}"
         ]
-        # st.write("")
+        save_value(
+            conn,
+            st.session_state.current_id,
+            record["team_member"],
+            record["progress"],
+            "ai",
+            record["generated_by_ai"],
+        )
 
     with center_col:
         if b64_image:
@@ -111,26 +120,30 @@ else:
     with right_col:
         margin, col_with_margin = st.columns([1, 9])
         with col_with_margin:
-            st.write("L'image est-elle humoristique ?")
-            visual_humor = st.toggle(
-                "L'image est humoristique"
-                if st.session_state[f"visual_humor_{st.session_state.current_id}"]
-                else "L'image n'est pas humoristique",
-                key=f"visual_humor_{st.session_state.current_id}",
-                on_change=visual_humor_selected,
-            )
-
-            st.write("Le texte est-il humoristique ?")
-            textual_humor = st.toggle(
-                "Le texte est humoristique"
-                if st.session_state[f"textual_humor_{st.session_state.current_id}"]
-                else "Le texte n'est pas humoristique",
-                key=f"textual_humor_{st.session_state.current_id}",
-                on_change=textual_humor_selected,
-            )
-
-            content_type = fetch_value(
+            annotations = fetch_annotations(
                 conn, st.session_state.current_id, record["team_member"]
+            )
+
+            if annotations:
+                content_type, humor, _ = annotations
+            else:
+                content_type, humor = None, "Non"
+
+            st.pills(
+                "Présence de contenus humoristiques",
+                humor_categories,
+                selection_mode="single",
+                key=f"humor_{st.session_state.current_id}",
+                default=humor if humor else "Non",
+                on_change=humor_selected,
+            )
+
+            st.radio(
+                "Image générée par IA",
+                ["Non", "Oui", "Ne sait pas"],
+                horizontal=True,
+                key=f"IA_{st.session_state.current_id}",
+                on_change=radio_selected,
             )
 
             try:

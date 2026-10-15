@@ -9,7 +9,7 @@ import streamlit as st
 def get_db():
     conn = sqlite3.connect("annotations.db", check_same_thread=False)
 
-    # conn.execute("DROP TABLE annotations")
+    conn.execute("DROP TABLE annotations")
 
     conn.execute("""
     CREATE TABLE IF NOT EXISTS annotations (
@@ -17,6 +17,9 @@ def get_db():
         user TEXT,
         text TEXT,
         content_type TEXT,
+        humor TEXT,
+        ai TEXT,
+        rank INTEGER,
         PRIMARY KEY (id, user)
     )
     """)
@@ -25,10 +28,10 @@ def get_db():
     return conn
 
 
-def save_value(conn, id, user, content_type, text):
+def save_value(conn, id, user, rank, key, value):
     conn.execute(
-        """
-    INSERT INTO annotations (id, user, content_type, text)
+        f"""
+    INSERT INTO annotations (id, user, rank, {key})
     VALUES (?, ?, ?, ?)
     ON CONFLICT(id, user) DO UPDATE SET
         content_type = excluded.content_type
@@ -36,19 +39,19 @@ def save_value(conn, id, user, content_type, text):
         (
             id,
             user,
-            content_type,
-            text,
+            rank,
+            value,
         ),
     )
 
     conn.commit()
 
 
-def fetch_value(conn, id, user):
+def fetch_annotations(conn, id, user):
 
     cursor = conn.execute(
         """
-    SELECT content_type
+    SELECT content_type, humor, ai
     FROM annotations
     WHERE (id, user) = (?, ?)
         """,
@@ -61,7 +64,7 @@ def extract_values(_conn, user):
 
     cursor = _conn.execute(
         """
-    SELECT id, content_type, user, text
+    SELECT id, rank, content_type, humor, ai, user, text
     FROM annotations
     WHERE user = ?
     """,
@@ -71,8 +74,10 @@ def extract_values(_conn, user):
     buffer = StringIO()
 
     writer = csv.writer(buffer)
-    writer.writerow(["id", "content_type", "team_member", "text"])
-    for post_id, content_type, user_id, text in cursor.fetchall():
-        writer.writerow([post_id, content_type, user_id, text])
+    writer.writerow(
+        ["id", "index", "content_type", "humor", "ai_generated", "team_member", "text"]
+    )
+    for elements in cursor.fetchall():
+        writer.writerow(elements)
 
     return buffer.getvalue()
