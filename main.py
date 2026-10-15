@@ -4,6 +4,7 @@ import pytz
 import streamlit as st
 
 from data import parse_csv
+from form import content_type_categories
 from image import process_image
 from sqlite import extract_values, fetch_value, get_db, save_value
 
@@ -124,26 +125,23 @@ else:
                 conn, st.session_state.current_id, record["team_member"]
             )
 
-            st.pills(
-                "Type de contenu",
-                [
-                    "Photo",
-                    "Caricature",
-                    "Mème",
-                    "Infographie",
-                    "Illustration",
-                    "Montage photo",
-                    "Capture d’écran d’un site d'information",
-                    "Capture d’écran d’un sondage",
-                    "Capture d’écran d'un tweet",
-                    "Autre",
-                    "Ne s'applique pas",
-                ],
-                selection_mode="single",
-                key=f"content_type_{st.session_state.current_id}",
-                default=content_type,
-                on_change=content_type_selected,
-            )
+            try:
+                st.pills(
+                    "Type de contenu",
+                    content_type_categories,
+                    selection_mode="single",
+                    key=f"content_type_{st.session_state.current_id}",
+                    default=content_type,
+                    on_change=content_type_selected,
+                )
+            except st.errors.StreamlitAPIException:
+                st.pills(
+                    "Type de contenu",
+                    content_type_categories,
+                    selection_mode="single",
+                    key=f"content_type_{st.session_state.current_id}",
+                    on_change=content_type_selected,
+                )
 
             if st.button("Sauvegarde", icon=":material/backup:"):
                 data = extract_values(conn, record["team_member"])
