@@ -56,6 +56,6 @@ def parse_csv(data_file, conn):
             last_visited = int_id
 
     if last_visited is None:
-        return db, first_id
+        return db, first_id, db[int_id]["progress"]
 
     return db, last_visited, db[int_id]["progress"]
