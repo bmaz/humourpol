@@ -7,13 +7,14 @@ from io import StringIO
 import casanova
 import streamlit as st
 
+from sqlite import fetch_value
+
 csv.field_size_limit(sys.maxsize)
 
 locale.setlocale(locale.LC_TIME, "fr_FR")
 
 
-@st.cache_data
-def parse_csv(data_file):
+def parse_csv(data_file, conn):
     """Parse csv with caching to avoid redundant processing"""
     reader = casanova.reader(StringIO(data_file.getvalue().decode("utf-8")))
     db = {}
@@ -28,6 +29,7 @@ def parse_csv(data_file):
 
     previous_id = None
     first_id = None
+    last_visited = None
 
     for row in reader:
         int_id = int(row[id_pos])
@@ -49,4 +51,10 @@ def parse_csv(data_file):
             first_id = int_id
         previous_id = int_id
 
-    return db, first_id
+        if fetch_value(conn, int_id, row[team_member_pos]):
+            last_visited = int_id
+
+    if last_visited is None:
+        return db, first_id
+
+    return db, last_visited

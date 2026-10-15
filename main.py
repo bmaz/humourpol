@@ -43,7 +43,7 @@ if st.session_state.uploaded_file is None:
 else:
     if "db" not in st.session_state:
         st.session_state.db, st.session_state.current_id = parse_csv(
-            st.session_state.uploaded_file
+            st.session_state.uploaded_file, conn
         )
 
     initialize_toggles()
