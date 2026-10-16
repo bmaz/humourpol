@@ -1,4 +1,4 @@
-content_type_categories = [
+image_type_categories = [
     "Photo",
     "Illustration",
     "Infographie",

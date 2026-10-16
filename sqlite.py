@@ -9,18 +9,25 @@ import streamlit as st
 def get_db():
     conn = sqlite3.connect("annotations.db", check_same_thread=False)
 
-    # conn.execute("DROP TABLE annotations")
+    conn.execute("DROP TABLE annotations")
 
     conn.execute("""
     CREATE TABLE IF NOT EXISTS annotations (
         id INTEGER,
-        user TEXT,
+        previous_id INTEGER,
+        next_id INTEGER,
+        team_member TEXT,
+        round INTEGER,
         text TEXT,
-        content_type TEXT,
+        image TEXT,
+        mimetype TEXT,
+        date TEXT,
+        account TEXT,
+        rank INTEGER,
+        image_type TEXT,
         humor TEXT,
         ai TEXT,
-        rank INTEGER,
-        PRIMARY KEY (id, user)
+        PRIMARY KEY (id, team_member)
     )
     """)
 
@@ -28,54 +35,125 @@ def get_db():
     return conn
 
 
-def save_value(conn, id, user, rank, key, value):
+def save_metadata(
+    conn,
+    id,
+    previous_id,
+    team_member,
+    round,
+    text,
+    image,
+    mimetype,
+    date,
+    account,
+    rank,
+    image_type,
+    ai,
+    humor,
+):
     conn.execute(
-        f"""
-    INSERT INTO annotations (id, user, rank, {key})
-    VALUES (?, ?, ?, ?)
-    ON CONFLICT(id, user) DO UPDATE SET
-        {key} = excluded.{key}
+        """
+    INSERT INTO annotations (id, previous_id, team_member, round, text, image, mimetype, date, account, rank, image_type, ai, humor)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT DO NOTHING
     """,
         (
             id,
-            user,
+            previous_id,
+            team_member,
+            round,
+            text,
+            image,
+            mimetype,
+            date,
+            account,
             rank,
-            value,
+            image_type,
+            ai,
+            humor,
         ),
     )
 
     conn.commit()
 
 
-def fetch_annotations(conn, id, user):
+def save_single_field(conn, id, team_member, key, value):
+    conn.execute(
+        f"""
+    INSERT INTO annotations (id, team_member, {key})
+    VALUES (?, ?, ?)
+    ON CONFLICT(id, team_member) DO UPDATE SET
+        {key} = excluded.{key}
+    """,
+        (id, team_member, value),
+    )
+
+    conn.commit()
+
+
+def fetch_annotations(conn, id, team_member):
 
     cursor = conn.execute(
         """
-    SELECT content_type, humor, ai
+    SELECT image_type, humor, ai
     FROM annotations
-    WHERE (id, user) = (?, ?)
+    WHERE (id, team_member) = (?, ?)
         """,
-        (id, user),
+        (id, team_member),
     )
     return cursor.fetchone()
 
 
-def extract_values(_conn, user):
+def fetch_record(conn, id, team_member):
+    cursor = conn.execute(
+        """
+    SELECT previous_id, next_id, text, image, date, account, rank
+    FROM annotations
+    WHERE (id, team_member) = (?, ?)
+        """,
+        (id, team_member),
+    )
+    previous_id, next_id, text, image, date, account, rank = cursor.fetchone()
+    return {
+        "previous_id": previous_id,
+        "next_id": next_id,
+        "b64_image": image,
+        "text": text,
+        "date": date,
+        "account": account,
+        "rank": rank,
+    }
+
+
+def extract_values(_conn, team_member, round):
 
     cursor = _conn.execute(
         """
-    SELECT id, rank, content_type, humor, ai, user, text
+    SELECT id, rank, image_type, humor, ai, team_member, round, account, date, text, mimetype, image
     FROM annotations
-    WHERE user = ?
+    WHERE (team_member, round) = (?, ?)
     """,
-        (user,),
+        (team_member, round),
     )
 
     buffer = StringIO()
 
     writer = csv.writer(buffer)
     writer.writerow(
-        ["id", "index", "content_type", "humor", "ai_generated", "team_member", "text"]
+        [
+            "id",
+            "index",
+            "image_type",
+            "humor",
+            "ai_generated",
+            "team_member",
+            "round",
+            "post_owner.name",
+            "creation_time",
+            "text",
+            "mimetype",
+            "b64_image",
+        ]
     )
     for elements in cursor.fetchall():
         writer.writerow(elements)
