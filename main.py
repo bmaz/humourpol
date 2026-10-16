@@ -85,7 +85,7 @@ else:
             record["humor"],
         )
 
-    def radio_selected():
+    def ai_selected():
         record["generated_by_ai"] = st.session_state[
             f"IA_{st.session_state.current_id}"
         ]
@@ -95,7 +95,7 @@ else:
             record["team_member"],
             record["progress"],
             "ai",
-            record["generated_by_ai"],
+            st.session_state[f"IA_{st.session_state.current_id}"],
         )
 
     with center_col:
@@ -116,9 +116,9 @@ else:
             )
 
             if annotations:
-                content_type, humor, _ = annotations
+                content_type, humor, ai = annotations
             else:
-                content_type, humor = None, "Non"
+                content_type, humor, ai = None, "Non", "Non"
 
             st.pills(
                 "Présence de contenus humoristiques",
@@ -129,12 +129,13 @@ else:
                 on_change=humor_selected,
             )
 
-            st.radio(
+            st.pills(
                 "Image générée par IA",
                 ["Non", "Oui", "Ne sait pas"],
-                horizontal=True,
+                selection_mode="single",
                 key=f"IA_{st.session_state.current_id}",
-                on_change=radio_selected,
+                default=ai if ai else "Non",
+                on_change=ai_selected,
             )
 
             try:

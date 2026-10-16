@@ -34,7 +34,9 @@ def save_value(conn, id, user, rank, key, value):
     INSERT INTO annotations (id, user, rank, {key})
     VALUES (?, ?, ?, ?)
     ON CONFLICT(id, user) DO UPDATE SET
-        content_type = excluded.content_type
+        content_type = excluded.content_type,
+        ai = excluded.ai,
+        humor = excluded.humor
     """,
         (
             id,
