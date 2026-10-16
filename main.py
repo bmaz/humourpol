@@ -23,11 +23,6 @@ _, bcol1, bcol2, _ = st.sidebar.columns([1, 1, 1, 1])
 conn = get_db()
 
 
-def initialize_toggles():
-    if f"humor_{st.session_state.current_id}" not in st.session_state:
-        st.session_state[f"humor_{st.session_state.current_id}"] = False
-
-
 if "uploaded_file" not in st.session_state:
     st.session_state.uploaded_file = None
 
@@ -44,8 +39,6 @@ else:
             parse_csv(st.session_state.uploaded_file, conn)
         )
 
-    initialize_toggles()
-
     with st.bottom:
         progressbar = st.progress(0)
 
@@ -53,13 +46,11 @@ else:
         previous_id = st.session_state.db[st.session_state.current_id]["previous_id"]
         if previous_id is not None:
             st.session_state.current_id = previous_id
-        initialize_toggles()
 
     if bcol2.button("", icon=":material/arrow_forward_ios:", shortcut="Down"):
         next_id = st.session_state.db[st.session_state.current_id]["next_id"]
         if next_id is not None:
             st.session_state.current_id = next_id
-        initialize_toggles()
 
     record = st.session_state.db[st.session_state.current_id]
 
